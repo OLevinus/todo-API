@@ -44,9 +44,9 @@ def main():
             manager.view_tasks(sort_by_priority=True)
         elif choice == "3":
             raw = input(
-                "Enter task(s) (comma-separated for multiple): ").strip()
-            priority = prompt_priority()
-            manager.add_tasks(raw, priority=priority)
+                "Enter task(s) — 'task' or 'task:priority', comma-separated: ").strip()
+            default_priority = prompt_priority()
+            manager.add_tasks(raw, default_priority=default_priority)
         elif choice == "4":
             manager.view_tasks()
             raw = input("Task number(s) to mark done (e.g. 1,3,5): ").strip()

@@ -26,12 +26,7 @@ class TaskManager:
         with open(self.filename, "w") as f:
             json.dump([t.to_dict() for t in self.tasks], f, indent=2)
 
-    def add_tasks(self, raw, priority="medium"):
-        if priority not in VALID_PRIORITIES:
-            print(
-                f"Invalid priority '{priority}'. Must be one of: {', '.join(VALID_PRIORITIES)}.")
-            return
-
+    def add_tasks(self, raw, default_priority="medium"):
         task_texts = [t.strip() for t in raw.split(",") if t.strip()]
         if not task_texts:
             print("Task can't be empty.")
@@ -40,11 +35,25 @@ class TaskManager:
         existing_lower = {t.text.lower() for t in self.tasks}
         added = []
         skipped = []
+        invalid_priorities = []
 
-        for text in task_texts:
+        for entry in task_texts:
+            if ":" in entry:
+                text, _, prio_raw = entry.partition(":")
+                text = text.strip()
+                priority = prio_raw.strip().lower() or default_priority
+            else:
+                text = entry
+                priority = default_priority
+            if priority not in VALID_PRIORITIES:
+                invalid_priorities.append(
+                    f"{text} (invalid priority '{priority}')")
+                continue
+
             if text.lower() in existing_lower:
                 skipped.append(text)
                 continue
+
             self.tasks.append(Task(text, priority=priority))
             existing_lower.add(text.lower())
             added.append(text)
@@ -54,6 +63,9 @@ class TaskManager:
             print("Added: " + ", ".join(added))
         if skipped:
             print("Already on the list, skipped: " + ", ".join(skipped))
+        if invalid_priorities:
+            print("Skipped due to invalid priority: " +
+                  ", ".join(invalid_priorities))
 
     def view_tasks(self, sort_by_priority=False):
         if not self.tasks:
